@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Your files{% endblock %}
+{% block body %}
+<main class="dl{{ ' has-dock' if files|length > 1 }}" id="app" data-remaining="{{ remaining }}">
+  <h1 class="wordmark"><span>{{ app_name }}</span></h1>
+  <p class="expiry" id="countdown"></p>
+
+  {% if files|length == 1 %}
+  {% set f = files[0] %}
+  <section class="single">
+    {% if f.image %}
+    <a class="preview" href="{{ url_for('get_file', token=token, name=f.name) }}" target="_blank" rel="noopener">
+      <img src="{{ url_for('get_file', token=token, name=f.name) }}" alt="{{ f.name }}">
+    </a>
+    {% else %}
+    <div class="preview filetile"><span>{{ (f.ext or 'file')[:5]|upper }}</span></div>
+    {% endif %}
+    <p class="fname">{{ f.name }}</p>
+    <p class="fsize">{{ f.size|size }}</p>
+    <a class="btn primary wide" href="{{ url_for('get_file', token=token, name=f.name, dl=1) }}" download="{{ f.name }}">Download</a>
+  </section>
+
+  {% else %}
+  <h2>Your files</h2>
+  <p class="summary">{{ files|length }} files, {{ files|sum(attribute='size')|size }} in total</p>
+  <ul class="rows">
+    {% for f in files %}
+    <li class="row">
+      {% if f.image %}
+      <a class="rthumb" href="{{ url_for('get_file', token=token, name=f.name) }}" target="_blank" rel="noopener">
+        <img src="{{ url_for('get_file', token=token, name=f.name) }}" alt="" loading="lazy">
+      </a>
+      {% else %}
+      <div class="rthumb filetile"><span>{{ (f.ext or 'file')[:5]|upper }}</span></div>
+      {% endif %}
+      <div class="rinfo">
+        <span class="rname">{{ f.name }}</span>
+        <span class="rsize">{{ f.size|size }}</span>
+      </div>
+      <a class="rdl" href="{{ url_for('get_file', token=token, name=f.name, dl=1) }}" download="{{ f.name }}" aria-label="Download {{ f.name }}">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  <div class="dock">
+    <a class="btn primary wide" href="{{ url_for('get_zip', token=token) }}">Download all as ZIP</a>
+  </div>
+  {% endif %}
+</main>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='download.js', v=asset_v) }}"></script>{% endblock %}
